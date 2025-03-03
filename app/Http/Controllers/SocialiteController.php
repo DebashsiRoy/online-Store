@@ -42,6 +42,32 @@ class SocialiteController extends Controller
             return redirect('/login')->with('error', 'Something went wrong!');
         }
     }
+
+    // Method for facebook login
+    public function redirectToFacebook()
+    {
+        return Socialite::driver('facebook')->redirect();
+    }
+    public function handleFacebookCallback()
+    {
+        try {
+            $facebookUser = Socialite::driver('facebook')->user();
+            $user = User::where('email', $facebookUser->getEmail())->first();
+            if ($user){
+                $user = User::create([
+                    'name' => $facebookUser->getName(),
+                    'email' => $facebookUser->getEmail(),
+                    'password' => Hash::make('Pass#Key#@9865'),
+                    'facebook_id' => $facebookUser->id,
+                ]);
+            }
+            Auth::login($user);
+            return redirect()->route('dashboard'); // Redirect to the dashboard or any route
+        }   catch (Exception $e) {
+            return redirect('/login')->with('error', 'Something went wrong!');
+        }
+    }
+
 }
 
 
